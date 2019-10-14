@@ -1,0 +1,29 @@
+Nico’s Guide to GitHub commands!
+
+Perhaps there is something more ‘bulletproof’ online, but these instructions work for me (Nicos).
+
+1.	Create an empty GitHub repository
+2.	Identify repository URL 
+3.	Open command prompt and navigate to the folder which you will eventually be tracking the contents of. 
+4.	Copy the folder path from within file explorer
+5.	In the command prompt navigate to copied folder location using ‘cd’
+6.	Once in the folder path clone remote (online) repository to chosen folder: git clone URL 
+a.	Check there is a .Git folder in your desired location; it may be hidden thus in file explorer go to view->options->change folder & options->view->show hidden files, folders & drives
+b.	If you’re not satisfied with the location of the .git folder; cut it to the desired folder location and delete the Folder that was created (likely to be the name of the remote repository); ensure you’re still in the correct directory at command prompt.
+7.	To add a folder and contents (e.g., files and folders within main folder): git add * 
+a.	Adds the folder(s) within the current directory
+b.	To add a single file: git add FirstFolderInRepo/SecondFolderInRepo/myFile.txt
+c.	To add a single file: git add myFile.m
+8.	To commit these changes: git commit -am “message”
+a.	“message” something relevant for other collaborators; what have you done? What changes?
+9.	Lastly, to push files from local (your computer) to remote: git push 
+
+Useful commands:
+
+•	To get collaborator modifications navigate to the main directory in command prompt and use: git pull 
+•	To check what files you have added etc. prior to committing them you can use: git status
+•	If you do not want to share a particular folders/files with collaborators put a ‘.gitignore.txt’ file in the folder which contains the .git folder
+o	Will look something like this:
+# Built application files
+Running_implicit_muscleDriven/Polynomials/MAresults/*
+*.asv
