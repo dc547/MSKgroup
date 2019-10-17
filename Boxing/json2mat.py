@@ -23,34 +23,36 @@ from pandas.io.json import json_normalize
 import numpy as np
 import scipy.io as sio
 import argparse
+import time
+import json
 
 def loadData(fullpath):
     
     # Get a list of all .json files in specifed directory
     files = [os.path.join(fullpath, f) for f in os.listdir(fullpath) if f.endswith('.json')]
     
-    # initalise empty df
-    pose = pd.DataFrame()
-    
+    # allocate memory
+    data = []
     # read each file in one at a time
-    j = 1
+    j = 0
     for i in files:
         print('[INFO] Reading JSON File {}: '.format(j), os.path.basename(i))
         j += 1
-        
         # read in a give json file
-        df = pd.read_json(i)
+        dataIn = json.load(open(i))
         
         # check if file contains any data - ie were any keypoints 
         # detected in this frame. If yes - unpack json object,
-        # grab 2d pose data and append to df, else append a row of nans
-        if np.size(df.people) > 0:
-            df = json_normalize(df.to_dict('list'), ['people']).unstack().apply(pd.Series)
-            df = df.iloc[7,:]
-            pose = pose.append(df)
-        elif np.size(df.people) == 0:
-            df = pd.DataFrame(0, index=[0], columns=np.arange(0, 75))
-            pose = pose.append(df)
+        # grab 2d pose data and append to list, else append a row of zeros
+        if len(dataIn['people']) > 0:
+            dataTemp = dataIn['people'][0]['pose_keypoints_2d']
+            data.append(dataTemp)
+        elif len(dataIn['people']) > 0:
+            dataTemp = np.zeros((1, 75), dtype=int)
+            data.append(dataTemp)
+    
+    # Convert list to df
+    pose = pd.DataFrame(data)
     
     # Specify column names (X-coord, Y-coord, confidence score) for df 
     # and update index
@@ -81,10 +83,10 @@ def loadData(fullpath):
                    'RHeelX', 'RHeelY', 'RHeelC']
     pose.columns = columnNames
     pose.reset_index(drop=True, inplace=True)
-    pose.fillna(0)
     
     return pose
 
+t = time.time()
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -116,20 +118,20 @@ if args["type"] == 'csv':
     print('[INFO] Saved: {}.csv'.format(writePath))
 elif args["type"] == 'mat':
     # write dataframe to .mat format
-    print('\n[INFO] Writing data to .mat...')
+    print('[INFO] Writing data to .mat...')
     sio.savemat(writePath+'.mat', {'poseData':pose.to_dict('split')})
     print('[INFO] Saved: {}.mat'.format(writePath))
 elif args["type"] == 'all':
-    print('\n[INFO] Writing data to all formats...')
+    print('[INFO] Writing data to all formats...')
     # write dataframe to .mat format
-    print('\n[INFO] Writing data to .mat...')
+    print('[INFO] Writing data to .mat...')
     sio.savemat(writePath+'.mat', {'poseData':pose.to_dict('split')})
     print('[INFO] Saved: {}.mat'.format(writePath))
     # write df to csv
-    print('\n[INFO] Writing data to csv...')
+    print('[INFO] Writing data to csv...')
     pose.to_csv (writePath+'.csv', index = None, header=True, encoding='utf-8') 
     print('[INFO] Saved: {}.csv'.format(writePath))
     
-print('[INFO] Processing Complete!\n\n')
-
+print('\n[INFO] Processing Complete!')
+print("[INFO] Processing time: {:.3f} sec\n\n".format(time.time() - t))
 
